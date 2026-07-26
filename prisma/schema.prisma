@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Rol {
+  PROPIETARIO
+  HUESPED
+  INMOBILIARIA
+  ASEGURADORA
+  ADMIN
+}
+
+enum EstadoReporte {
+  PENDIENTE
+  VERIFICADO
+  RECHAZADO
+}
+
+enum EstadoKyc {
+  PENDIENTE
+  VERIFICADO
+  RECHAZADO
+}
+
+enum EstadoReserva {
+  CONFIRMADA
+  CANCELADA
+  FINALIZADA
+}
+
+enum Plan {
+  GRATIS
+  INMOBILIARIA
+  ASEGURADORA
+}
+
+model Usuario {
+  id            String   @id @default(cuid())
+  nombre        String
+  email         String   @unique
+  dni           String?  @unique
+  telefono      String?
+  rol           Rol
+  createdAt     DateTime @default(now())
+
+  propiedades         Propiedad[]       @relation("PropietarioPropiedades")
+  reservasComoHuesped Reserva[]         @relation("HuespedReservas")
+  reportesCreados     Reporte[]         @relation("ReportesCreados")
+  reportesRecibidos   Reporte[]         @relation("ReportesRecibidos")
+  kyc                 KycVerificacion?
+  consultasRealizadas Consulta[]
+  suscripcion         Suscripcion?
+}
+
+model Propiedad {
+  id            String   @id @default(cuid())
+  propietario   Usuario  @relation("PropietarioPropiedades", fields: [propietarioId], references: [id])
+  propietarioId String
+  titulo        String
+  direccion     String
+  ciudad        String
+  tipo          String
+  amueblado     Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  reservas Reserva[]
+}
+
+model Reserva {
+  id            String        @id @default(cuid())
+  propiedad     Propiedad     @relation(fields: [propiedadId], references: [id])
+  propiedadId   String
+  huesped       Usuario       @relation("HuespedReservas", fields: [huespedId], references: [id])
+  huespedId     String
+  checkIn       DateTime
+  checkOut      DateTime
+  estado        EstadoReserva @default(CONFIRMADA)
+  createdAt     DateTime      @default(now())
+
+  reportes Reporte[]
+}
+
+model Reporte {
+  id            String        @id @default(cuid())
+  reserva       Reserva?      @relation(fields: [reservaId], references: [id])
+  reservaId     String?
+  huesped       Usuario       @relation("ReportesRecibidos", fields: [huespedId], references: [id])
+  huespedId     String
+  propietario   Usuario       @relation("ReportesCreados", fields: [propietarioId], references: [id])
+  propietarioId String
+  tipo          String
+  descripcion   String
+  monto         Float?
+  estado        EstadoReporte @default(PENDIENTE)
+  createdAt     DateTime      @default(now())
+}
+
+model KycVerificacion {
+  id           String    @id @default(cuid())
+  usuario      Usuario   @relation(fields: [usuarioId], references: [id])
+  usuarioId    String    @unique
+  proveedor    String    @default("manual")
+  estado       EstadoKyc @default(PENDIENTE)
+  verificadoEn DateTime?
+  createdAt    DateTime  @default(now())
+}
+
+model Consulta {
+  id               String   @id @default(cuid())
+  usuario          Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId        String
+  huespedBuscado   String
+  createdAt        DateTime @default(now())
+}
+
+model Suscripcion {
+  id                 String   @id @default(cuid())
+  usuario            Usuario  @relation(fields: [usuarioId], references: [id])
+  usuarioId          String   @unique
+  plan               Plan     @default(GRATIS)
+  consultasIncluidas Int      @default(3)
+  activa             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+}

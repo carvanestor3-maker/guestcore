@@ -1,65 +1,67 @@
-import Image from "next/image";
+import Link from "next/link";
+import { prisma } from "@/lib/prisma";
 
-export default function Home() {
+export default async function Home() {
+  const [usuarios, propiedades, reservas, reportes, reportesVerificados] = await Promise.all([
+    prisma.usuario.count(),
+    prisma.propiedad.count(),
+    prisma.reserva.count(),
+    prisma.reporte.count(),
+    prisma.reporte.count({ where: { estado: "VERIFICADO" } }),
+  ]);
+
+  const stats = [
+    { label: "Usuarios", value: usuarios, href: "/usuarios" },
+    { label: "Propiedades", value: propiedades, href: "/propiedades" },
+    { label: "Reservas", value: reservas, href: "/reservas" },
+    { label: "Reportes", value: reportes, href: "/reportes" },
+    { label: "Reportes verificados", value: reportesVerificados, href: "/reportes" },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold">guestcore</h1>
+        <p className="mt-1 max-w-2xl text-neutral-600">
+          Un &quot;Veraz inmobiliario&quot; para alquiler temporario: los propietarios
+          reportan daños o robos de huéspedes, y cualquiera puede consultar el
+          historial de un huésped antes de aceptar una reserva.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-5">
+        {stats.map((stat) => (
+          <Link
+            key={stat.label}
+            href={stat.href}
+            className="rounded-lg border border-neutral-200 bg-white p-4 transition hover:border-neutral-400"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+            <div className="text-2xl font-bold">{stat.value}</div>
+            <div className="text-sm text-neutral-500">{stat.label}</div>
+          </Link>
+        ))}
+      </div>
+
+      <div className="rounded-lg border border-neutral-200 bg-white p-6">
+        <h2 className="font-semibold">Flujo de prueba sugerido</h2>
+        <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-neutral-600">
+          <li>
+            Creá un <Link className="underline" href="/usuarios">propietario y un huésped</Link>.
+          </li>
+          <li>
+            Cargá una <Link className="underline" href="/propiedades">propiedad</Link> para el propietario.
+          </li>
+          <li>
+            Registrá una <Link className="underline" href="/reservas">reserva</Link> del huésped en esa propiedad.
+          </li>
+          <li>
+            Si hubo un daño o robo, cargá un <Link className="underline" href="/reportes">reporte</Link>.
+          </li>
+          <li>
+            Antes de aceptar a un huésped, <Link className="underline" href="/buscar">consultá su score</Link> por email.
+          </li>
+        </ol>
+      </div>
     </div>
   );
 }
