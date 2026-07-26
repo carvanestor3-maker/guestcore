@@ -14,6 +14,7 @@ async function main() {
   await prisma.suscripcion.deleteMany();
   await prisma.kycVerificacion.deleteMany();
   await prisma.usuario.deleteMany();
+  await prisma.tarifaConsulta.deleteMany();
 
   const propietario1 = await prisma.usuario.create({
     data: {
@@ -61,7 +62,9 @@ async function main() {
     data: {
       nombre: "Administradora Costa Alta",
       email: "contacto@costaalta.com",
+      dni: "31234567",
       rol: "INMOBILIARIA",
+      kyc: { create: { estado: "VERIFICADO", proveedor: "padron-simulado", verificadoEn: new Date() } },
       suscripcion: { create: { plan: "INMOBILIARIA", consultasIncluidas: 500 } },
     },
   });
@@ -142,15 +145,46 @@ async function main() {
     },
   });
 
+  await prisma.tarifaConsulta.createMany({
+    data: [
+      { tramo: "GRATIS", desde: 1, hasta: 3, precioPorConsulta: 0, precioAbono: null },
+      { tramo: "BASICO", desde: 4, hasta: 10, precioPorConsulta: 1500, precioAbono: null },
+      { tramo: "ABONO", desde: 11, hasta: null, precioPorConsulta: null, precioAbono: 25000 },
+    ],
+  });
+
+  const admin = await prisma.usuario.create({
+    data: {
+      nombre: "Soledad Vidal",
+      email: "soledad.vidal@guestcore.com",
+      dni: "29112233",
+      rol: "ADMIN",
+      nivel: 3,
+    },
+  });
+
+  const gestorTarifas = await prisma.usuario.create({
+    data: {
+      nombre: "Tomás Pereyra",
+      email: "tomas.pereyra@guestcore.com",
+      dni: "26778899",
+      rol: "ADMIN",
+      nivel: 2,
+    },
+  });
+
   await prisma.consulta.create({
     data: {
       usuarioId: propietario2.id,
-      huespedBuscado: huespedProblema.email,
+      huespedBuscado: huespedProblema.dni ?? "",
+      numeroEnElMes: 1,
+      tramo: "GRATIS",
+      costoAplicado: 0,
     },
   });
 
   console.log("Seed completado:");
-  console.log({ propietario1, propietario2, huespedBueno, huespedProblema, inmobiliaria });
+  console.log({ propietario1, propietario2, huespedBueno, huespedProblema, inmobiliaria, admin, gestorTarifas });
 }
 
 main()

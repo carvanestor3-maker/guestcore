@@ -10,26 +10,35 @@ function formatearMonto(monto: number | null) {
   return monto.toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 });
 }
 
+const ROLES_CONSULTANTES = [
+  { value: "PROPIETARIO", label: "Propietario" },
+  { value: "INMOBILIARIA", label: "Inmobiliaria" },
+  { value: "ASEGURADORA", label: "Aseguradora" },
+] as const;
+
 export default async function BuscarPage({
   searchParams,
 }: {
-  searchParams: Promise<{ dni?: string }>;
+  searchParams: Promise<{ dni?: string; rol?: string }>;
 }) {
   const params = await searchParams;
   const dniIngresado = params.dni?.trim() ?? "";
   const dni = normalizarDni(dniIngresado);
-  const intentoBusqueda = dniIngresado.length > 0;
+  const rolConsultante = params.rol?.trim() ?? "";
+  const intentoBusqueda = dniIngresado.length > 0 && rolConsultante.length > 0;
 
   const [huesped, personaPadron, consultantes, ultimasConsultas] = await Promise.all([
-    dni
+    intentoBusqueda && dni
       ? prisma.usuario.findFirst({
           where: { dni, rol: "HUESPED" },
           include: { reportesRecibidos: true, kyc: true },
         })
       : Promise.resolve(null),
-    dni ? consultarPersonaPorDni(dni) : Promise.resolve(null),
+    intentoBusqueda && dni ? consultarPersonaPorDni(dni) : Promise.resolve(null),
     prisma.usuario.findMany({
-      where: { rol: { in: ["PROPIETARIO", "INMOBILIARIA", "ASEGURADORA"] } },
+      where: rolConsultante
+        ? { rol: rolConsultante as "PROPIETARIO" | "INMOBILIARIA" | "ASEGURADORA" }
+        : { rol: { in: ["PROPIETARIO", "INMOBILIARIA", "ASEGURADORA"] } },
       orderBy: { nombre: "asc" },
     }),
     prisma.consulta.findMany({
@@ -54,20 +63,34 @@ export default async function BuscarPage({
       <div>
         <h1 className="text-2xl font-bold">Consultar huésped</h1>
         <p className="mt-1 text-neutral-600">
-          Buscá solo por <strong>DNI</strong>. Lo validamos contra el padrón
-          para que no se puedan hacer consultas con documentos inventados, y el
-          nombre se muestra automáticamente — no hace falta tipearlo.
+          Buscá por <strong>DNI</strong>, indicando desde qué rol estás
+          consultando. Lo validamos contra el padrón para que no se puedan
+          hacer consultas con documentos inventados, y el nombre se muestra
+          automáticamente — no hace falta tipearlo.
         </p>
       </div>
 
-      <form method="get" className="flex gap-2 rounded-lg border border-neutral-200 bg-white p-4">
+      <form method="get" className="grid grid-cols-1 gap-2 rounded-lg border border-neutral-200 bg-white p-4 sm:grid-cols-[1fr_1fr_auto]">
+        <select
+          name="rol"
+          defaultValue={rolConsultante}
+          required
+          className="rounded border border-neutral-300 px-3 py-2 text-sm"
+        >
+          <option value="">¿Quién consulta?</option>
+          {ROLES_CONSULTANTES.map((r) => (
+            <option key={r.value} value={r.value}>
+              {r.label}
+            </option>
+          ))}
+        </select>
         <input
           name="dni"
           inputMode="numeric"
           defaultValue={dniIngresado}
           placeholder="DNI (sin puntos)"
           required
-          className="flex-1 rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="rounded border border-neutral-300 px-3 py-2 text-sm"
         />
         <button type="submit" className="rounded bg-neutral-900 px-4 py-2 text-sm font-medium text-white hover:bg-neutral-700">
           Buscar
@@ -86,7 +109,10 @@ export default async function BuscarPage({
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <h2 className="text-lg font-semibold">{nombreMostrado}</h2>
-              <p className="text-sm text-neutral-500">DNI {dni}</p>
+              <p className="text-sm text-neutral-500">
+                DNI {dni} · consultado como{" "}
+                {ROLES_CONSULTANTES.find((r) => r.value === rolConsultante)?.label ?? rolConsultante}
+              </p>
             </div>
             <div className="text-right">
               <div className="text-3xl font-bold">{score}</div>
@@ -131,12 +157,12 @@ export default async function BuscarPage({
 
           <form action={registrarConsultaForm} className="flex flex-wrap items-center gap-2 border-t border-neutral-100 pt-4 text-sm">
             <input type="hidden" name="dni" value={dni} />
-            <span className="text-neutral-500">Registrar esta consulta como:</span>
+            <span className="text-neutral-500">Registrar esta consulta con la cuenta:</span>
             <select name="usuarioId" required className="rounded border border-neutral-300 px-2 py-1">
               <option value="">Elegir cuenta…</option>
               {consultantes.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {c.nombre} ({c.rol})
+                  {c.nombre}
                 </option>
               ))}
             </select>
@@ -151,8 +177,16 @@ export default async function BuscarPage({
         <h3 className="text-sm font-semibold text-neutral-500">Últimas consultas registradas</h3>
         <ul className="mt-2 space-y-1 text-sm">
           {ultimasConsultas.map((c) => (
-            <li key={c.id} className="text-neutral-600">
-              {c.usuario.nombre} consultó DNI {c.huespedBuscado}
+            <li key={c.id} className="flex flex-wrap items-center gap-2 text-neutral-600">
+              <span>
+                {c.usuario.nombre} consultó DNI {c.huespedBuscado} (#{c.numeroEnElMes} del mes)
+              </span>
+              <Badge tone={c.tramo}>{c.tramo}</Badge>
+              {c.costoAplicado > 0 && (
+                <span className="text-xs text-neutral-400">
+                  {c.costoAplicado.toLocaleString("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 })}
+                </span>
+              )}
             </li>
           ))}
           {ultimasConsultas.length === 0 && <li className="text-neutral-400">Sin consultas todavía.</li>}

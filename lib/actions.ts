@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { consultarPersonaPorDni } from "@/lib/renaper";
+import { calcularTramo } from "@/lib/tarifas";
+import { generarClaveSegura, hashClave } from "@/lib/claves";
 
 function str(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
@@ -26,22 +28,22 @@ export async function crearUsuario(formData: FormData) {
 
   if (!email || !rol) return;
 
-  let dni: string | null = null;
-  if (dniRaw) {
-    const persona = await consultarPersonaPorDni(dniRaw);
-    // El huésped es el rol que se scorea, así que su identidad tiene que
-    // venir del padrón: si el DNI no figura, no se crea la cuenta.
-    if (!persona) {
-      if (rol === "HUESPED") return;
-    } else {
-      dni = persona.dni;
-      nombre = persona.nombreCompleto;
-    }
-  } else if (rol === "HUESPED") {
-    return;
-  }
+  // Nadie se da de alta sin una identidad real: el DNI tiene que existir en
+  // el padrón para cualquier rol (propietario, inmobiliaria, aseguradora,
+  // admin o huésped), sin excepción — de lo contrario no puede después
+  // consultar ni cargar reportes.
+  if (!dniRaw) return;
+  const persona = await consultarPersonaPorDni(dniRaw);
+  if (!persona) return;
 
-  if (!nombre) return;
+  const dni = persona.dni;
+  nombre = persona.nombreCompleto;
+
+  // El nivel de permisos es independiente del rol de negocio. Sólo los
+  // administradores pueden tener nivel 2 (modifica tarifas) o 3 (políticas);
+  // cualquier otro rol es siempre nivel 1, sin importar qué se haya mandado.
+  const nivelSolicitado = Number(str(formData, "nivel"));
+  const nivel = rol === "ADMIN" && (nivelSolicitado === 2 || nivelSolicitado === 3) ? nivelSolicitado : 1;
 
   await prisma.usuario.create({
     data: {
@@ -50,12 +52,10 @@ export async function crearUsuario(formData: FormData) {
       dni,
       telefono: telefono || null,
       rol,
-      // El DNI ya vino confirmado por el padrón, así que la identidad del
-      // huésped queda verificada al momento de darlo de alta.
-      kyc:
-        rol === "HUESPED" && dni
-          ? { create: { estado: "VERIFICADO", proveedor: "padron-simulado", verificadoEn: new Date() } }
-          : undefined,
+      nivel,
+      // El DNI ya vino confirmado por el padrón, así que la identidad
+      // queda verificada al momento de dar de alta la cuenta.
+      kyc: { create: { estado: "VERIFICADO", proveedor: "padron-simulado", verificadoEn: new Date() } },
     },
   });
 
@@ -160,7 +160,26 @@ export async function actualizarEstadoKyc(formData: FormData) {
 
 export async function registrarConsulta(usuarioId: string, huespedBuscado: string) {
   if (!usuarioId || !huespedBuscado) return;
-  await prisma.consulta.create({ data: { usuarioId, huespedBuscado } });
+
+  const inicioDeMes = new Date();
+  inicioDeMes.setDate(1);
+  inicioDeMes.setHours(0, 0, 0, 0);
+
+  const consultasEsteMes = await prisma.consulta.count({
+    where: { usuarioId, createdAt: { gte: inicioDeMes } },
+  });
+  const numeroEnElMes = consultasEsteMes + 1;
+  const tramo = calcularTramo(numeroEnElMes);
+
+  const tarifa = await prisma.tarifaConsulta.findUnique({ where: { tramo } });
+  // El costo por consulta individual sólo aplica a los tramos GRATIS y
+  // BASICO; en ABONO el usuario ya paga un fijo mensual por consultas
+  // ilimitadas, así que cada consulta puntual no suma costo adicional.
+  const costoAplicado = tramo === "BASICO" ? tarifa?.precioPorConsulta ?? 0 : 0;
+
+  await prisma.consulta.create({
+    data: { usuarioId, huespedBuscado, numeroEnElMes, tramo, costoAplicado },
+  });
 }
 
 export async function registrarConsultaForm(formData: FormData) {
@@ -170,4 +189,66 @@ export async function registrarConsultaForm(formData: FormData) {
 
   await registrarConsulta(usuarioId, dni);
   revalidatePath("/buscar");
+  revalidatePath("/tarifas");
+}
+
+export async function actualizarTarifa(formData: FormData) {
+  const actorId = str(formData, "actorId");
+  if (!actorId) return;
+
+  const actor = await prisma.usuario.findUnique({ where: { id: actorId } });
+  // Sólo nivel 2 (o superior) puede tocar el precio de la tabla de tarifas.
+  if (!actor || actor.nivel < 2) return;
+
+  const precioBasico = str(formData, "precioPorConsulta");
+  const precioAbono = str(formData, "precioAbono");
+
+  if (precioBasico) {
+    await prisma.tarifaConsulta.update({
+      where: { tramo: "BASICO" },
+      data: { precioPorConsulta: Number(precioBasico) },
+    });
+  }
+  if (precioAbono) {
+    await prisma.tarifaConsulta.update({
+      where: { tramo: "ABONO" },
+      data: { precioAbono: Number(precioAbono) },
+    });
+  }
+
+  revalidatePath("/tarifas");
+}
+
+export type EstadoGenerarClave = { clave: string | null; error: string | null };
+
+export async function generarClaveNivel2(
+  _prevState: EstadoGenerarClave,
+  formData: FormData,
+): Promise<EstadoGenerarClave> {
+  const actorId = str(formData, "actorId");
+  const usuarioId = str(formData, "usuarioId");
+  if (!actorId || !usuarioId) {
+    return { clave: null, error: "Faltan datos para generar la clave." };
+  }
+
+  const actor = await prisma.usuario.findUnique({ where: { id: actorId } });
+  // Sólo un usuario de nivel 3 puede generar claves para cuentas de nivel 2.
+  if (!actor || actor.nivel !== 3) {
+    return { clave: null, error: "Sólo un usuario de nivel 3 puede generar claves de nivel 2." };
+  }
+
+  const objetivo = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+  if (!objetivo || objetivo.nivel !== 2) {
+    return { clave: null, error: "La cuenta elegida no es de nivel 2." };
+  }
+
+  const clave = generarClaveSegura();
+  await prisma.claveAcceso.upsert({
+    where: { usuarioId },
+    update: { claveHash: hashClave(clave), generadaPorId: actorId, activa: true },
+    create: { usuarioId, claveHash: hashClave(clave), generadaPorId: actorId },
+  });
+
+  revalidatePath("/administracion");
+  return { clave, error: null };
 }

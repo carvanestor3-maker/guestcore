@@ -26,8 +26,10 @@ export default async function UsuariosPage() {
         <h2 className="col-span-full font-semibold">Nuevo usuario</h2>
         <p className="col-span-full text-xs text-neutral-500">
           El DNI se valida contra un padrón (simulado en este entorno de prueba)
-          y el nombre completo se autocompleta solo: nadie carga a mano el
-          nombre de un huésped.
+          y el nombre completo se autocompleta solo. Es obligatorio para
+          cualquier rol — propietario, inmobiliaria, aseguradora o huésped —:
+          sin un DNI válido no se puede dar de alta la cuenta ni, después,
+          consultar o cargar reportes.
         </p>
         <DniAutofill />
         <label className="text-sm">
@@ -54,6 +56,7 @@ export default async function UsuariosPage() {
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">DNI</th>
               <th className="px-4 py-3">Rol</th>
+              <th className="px-4 py-3">Nivel</th>
               <th className="px-4 py-3">KYC</th>
             </tr>
           </thead>
@@ -66,33 +69,30 @@ export default async function UsuariosPage() {
                 <td className="px-4 py-3">
                   <Badge tone={usuario.rol}>{usuario.rol}</Badge>
                 </td>
+                <td className="px-4 py-3 text-neutral-600">{usuario.nivel}</td>
                 <td className="px-4 py-3">
-                  {usuario.rol === "HUESPED" ? (
-                    <div className="flex items-center gap-2">
-                      <Badge tone={usuario.kyc?.estado ?? "PENDIENTE"}>
-                        {usuario.kyc?.estado ?? "SIN INICIAR"}
-                      </Badge>
-                      <form action={actualizarEstadoKyc}>
-                        <input type="hidden" name="usuarioId" value={usuario.id} />
-                        <input
-                          type="hidden"
-                          name="estado"
-                          value={usuario.kyc?.estado === "VERIFICADO" ? "PENDIENTE" : "VERIFICADO"}
-                        />
-                        <button className="text-xs text-blue-600 underline" type="submit">
-                          {usuario.kyc?.estado === "VERIFICADO" ? "Revertir" : "Verificar"}
-                        </button>
-                      </form>
-                    </div>
-                  ) : (
-                    <span className="text-neutral-400">—</span>
-                  )}
+                  <div className="flex items-center gap-2">
+                    <Badge tone={usuario.kyc?.estado ?? "PENDIENTE"}>
+                      {usuario.kyc?.estado ?? "SIN INICIAR"}
+                    </Badge>
+                    <form action={actualizarEstadoKyc}>
+                      <input type="hidden" name="usuarioId" value={usuario.id} />
+                      <input
+                        type="hidden"
+                        name="estado"
+                        value={usuario.kyc?.estado === "VERIFICADO" ? "PENDIENTE" : "VERIFICADO"}
+                      />
+                      <button className="text-xs text-blue-600 underline" type="submit">
+                        {usuario.kyc?.estado === "VERIFICADO" ? "Revertir" : "Verificar"}
+                      </button>
+                    </form>
+                  </div>
                 </td>
               </tr>
             ))}
             {usuarios.length === 0 && (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-neutral-400">
+                <td colSpan={6} className="px-4 py-6 text-center text-neutral-400">
                   Todavía no hay usuarios cargados.
                 </td>
               </tr>

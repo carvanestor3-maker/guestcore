@@ -20,8 +20,6 @@ export function DniAutofill() {
   const [estado, setEstado] = useState<Estado>("idle");
   const [, startTransition] = useTransition();
 
-  const dniObligatorio = rol === "HUESPED";
-
   function buscar(valor: string) {
     const soloDigitos = valor.replace(/\D/g, "");
     if (!soloDigitos) {
@@ -59,11 +57,11 @@ export function DniAutofill() {
         </select>
       </label>
       <label className="text-sm">
-        DNI {dniObligatorio && <span className="text-red-500">*</span>}
+        DNI <span className="text-red-500">*</span>
         <input
           name="dni"
           inputMode="numeric"
-          required={dniObligatorio}
+          required
           placeholder="Sin puntos, ej. 30123456"
           value={dni}
           onChange={(e) => setDni(e.target.value)}
@@ -78,7 +76,7 @@ export function DniAutofill() {
         )}
         {estado === "no_encontrado" && (
           <span className="mt-1 block text-xs text-red-600">
-            DNI no encontrado en el padrón{dniObligatorio ? " (obligatorio: no se creará la cuenta)" : ""}.
+            DNI no encontrado en el padrón: la cuenta no se puede crear sin una identidad válida.
           </span>
         )}
       </label>
@@ -94,6 +92,19 @@ export function DniAutofill() {
           className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 read-only:bg-neutral-100"
         />
       </label>
+      {rol === "ADMIN" && (
+        <label className="text-sm">
+          Nivel de permisos
+          <select
+            name="nivel"
+            defaultValue="2"
+            className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
+          >
+            <option value="2">Nivel 2 — puede modificar tarifas</option>
+            <option value="3">Nivel 3 — políticas del sistema (a futuro)</option>
+          </select>
+        </label>
+      )}
     </>
   );
 }

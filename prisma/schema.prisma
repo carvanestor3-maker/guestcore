@@ -44,6 +44,12 @@ enum Plan {
   ASEGURADORA
 }
 
+enum TramoConsulta {
+  GRATIS
+  BASICO
+  ABONO
+}
+
 model Usuario {
   id            String   @id @default(cuid())
   nombre        String
@@ -51,6 +57,11 @@ model Usuario {
   dni           String?  @unique
   telefono      String?
   rol           Rol
+  // Nivel de permisos, independiente del rol de negocio:
+  // 1 = propietario/inmobiliaria/aseguradora/huésped (piden o reciben reportes)
+  // 2 = puede modificar el precio de la tabla de tarifas de consulta
+  // 3 = administrador con acceso a políticas del sistema (login reforzado, a futuro)
+  nivel         Int      @default(1)
   createdAt     DateTime @default(now())
 
   propiedades         Propiedad[]       @relation("PropietarioPropiedades")
@@ -60,6 +71,8 @@ model Usuario {
   kyc                 KycVerificacion?
   consultasRealizadas Consulta[]
   suscripcion         Suscripcion?
+  claveAcceso         ClaveAcceso?      @relation("ClaveDelUsuario")
+  clavesGeneradas     ClaveAcceso[]     @relation("ClavesGeneradasPor")
 }
 
 model Propiedad {
@@ -116,11 +129,42 @@ model KycVerificacion {
 }
 
 model Consulta {
-  id               String   @id @default(cuid())
-  usuario          Usuario  @relation(fields: [usuarioId], references: [id])
-  usuarioId        String
-  huespedBuscado   String
-  createdAt        DateTime @default(now())
+  id             String        @id @default(cuid())
+  usuario        Usuario       @relation(fields: [usuarioId], references: [id])
+  usuarioId      String
+  huespedBuscado String
+  // Posición de esta consulta entre las que hizo el mismo usuario en el mes
+  // calendario en curso (1, 2, 3...), y el tramo/costo que le correspondió
+  // según esa posición. Se guarda al momento de la consulta para no alterar
+  // el historial si más adelante cambia el precio vigente.
+  numeroEnElMes  Int
+  tramo          TramoConsulta
+  costoAplicado  Float
+  createdAt      DateTime      @default(now())
+}
+
+model TarifaConsulta {
+  id                 String        @id @default(cuid())
+  tramo              TramoConsulta @unique
+  desde              Int
+  // null = sin límite superior (tramo ABONO)
+  hasta              Int?
+  precioPorConsulta  Float?
+  precioAbono        Float?
+  actualizadoEn      DateTime      @updatedAt
+}
+
+model ClaveAcceso {
+  id            String   @id @default(cuid())
+  usuario       Usuario  @relation("ClaveDelUsuario", fields: [usuarioId], references: [id])
+  usuarioId     String   @unique
+  // Sólo se guarda el hash; la clave en texto plano se muestra una única vez
+  // al generarla y no queda persistida en ningún lado.
+  claveHash     String
+  generadaPor   Usuario  @relation("ClavesGeneradasPor", fields: [generadaPorId], references: [id])
+  generadaPorId String
+  activa        Boolean  @default(true)
+  createdAt     DateTime @default(now())
 }
 
 model Suscripcion {

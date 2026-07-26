@@ -25,6 +25,8 @@ const NAV_LINKS = [
   { href: "/propiedades", label: "Propiedades" },
   { href: "/reservas", label: "Reservas" },
   { href: "/reportes", label: "Reportes" },
+  { href: "/tarifas", label: "Tarifas" },
+  { href: "/administracion", label: "Administración" },
 ];
 
 export default function RootLayout({

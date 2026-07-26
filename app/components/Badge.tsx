@@ -8,6 +8,9 @@ const STYLES: Record<string, string> = {
   CONFIRMADA: "bg-blue-100 text-blue-800",
   CANCELADA: "bg-neutral-200 text-neutral-600",
   FINALIZADA: "bg-green-100 text-green-800",
+  GRATIS: "bg-green-100 text-green-800",
+  BASICO: "bg-amber-100 text-amber-800",
+  ABONO: "bg-blue-100 text-blue-800",
 };
 
 export function Badge({ children, tone }: { children: React.ReactNode; tone: string }) {
