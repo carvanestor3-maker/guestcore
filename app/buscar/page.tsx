@@ -61,7 +61,7 @@ export default async function BuscarPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Consultar huésped</h1>
+        <h1 className="text-2xl font-bold text-teal-900">Consultar huésped</h1>
         <p className="mt-1 text-neutral-600">
           Buscá por <strong>DNI</strong>, indicando desde qué rol estás
           consultando. Lo validamos contra el padrón para que no se puedan
@@ -75,7 +75,7 @@ export default async function BuscarPage({
           name="rol"
           defaultValue={rolConsultante}
           required
-          className="rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="rounded border border-neutral-300 px-3 py-2 text-sm text-teal-400"
         >
           <option value="">¿Quién consulta?</option>
           {ROLES_CONSULTANTES.map((r) => (
@@ -108,7 +108,7 @@ export default async function BuscarPage({
         <div className="space-y-4 rounded-lg border border-neutral-200 bg-white p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold">{nombreMostrado}</h2>
+              <h2 className="text-lg font-semibold text-teal-700">{nombreMostrado}</h2>
               <p className="text-sm text-neutral-500">
                 DNI {dni} · consultado como{" "}
                 {ROLES_CONSULTANTES.find((r) => r.value === rolConsultante)?.label ?? rolConsultante}
@@ -158,7 +158,7 @@ export default async function BuscarPage({
           <form action={registrarConsultaForm} className="flex flex-wrap items-center gap-2 border-t border-neutral-100 pt-4 text-sm">
             <input type="hidden" name="dni" value={dni} />
             <span className="text-neutral-500">Registrar esta consulta con la cuenta:</span>
-            <select name="usuarioId" required className="rounded border border-neutral-300 px-2 py-1">
+            <select name="usuarioId" required className="rounded border border-neutral-300 px-2 py-1 text-teal-400">
               <option value="">Elegir cuenta…</option>
               {consultantes.map((c) => (
                 <option key={c.id} value={c.id}>

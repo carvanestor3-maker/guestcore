@@ -16,10 +16,10 @@ export function GenerarClaveForm({
 
   return (
     <form action={formAction} className="space-y-3 rounded-lg border border-neutral-200 bg-white p-6">
-      <h2 className="font-semibold text-neutral-900">Generar clave para una cuenta de nivel 2</h2>
+      <h2 className="font-semibold text-teal-700">Generar clave para una cuenta de nivel 2</h2>
       <input type="hidden" name="actorId" value={actorId} />
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <select name="usuarioId" required className="rounded border border-neutral-300 px-2 py-1">
+        <select name="usuarioId" required className="rounded border border-neutral-300 px-2 py-1 text-teal-400">
           <option value="">Elegir cuenta nivel 2…</option>
           {usuariosNivel2.map((u) => (
             <option key={u.id} value={u.id}>

@@ -23,7 +23,7 @@ export default async function ReportesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Reportes de incidentes</h1>
+        <h1 className="text-2xl font-bold text-teal-900">Reportes de incidentes</h1>
         <p className="mt-1 text-neutral-600">
           El corazón de guestcore: cargar daños, robos o mal comportamiento es
           siempre gratis para el propietario.
@@ -34,10 +34,10 @@ export default async function ReportesPage() {
         action={crearReporte}
         className="grid grid-cols-1 gap-4 rounded-lg border border-neutral-200 bg-white p-6 sm:grid-cols-2"
       >
-        <h2 className="col-span-full font-semibold">Nuevo reporte</h2>
+        <h2 className="col-span-full font-semibold text-teal-700">Nuevo reporte</h2>
         <label className="text-sm">
           Propietario que reporta
-          <select name="propietarioId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2">
+          <select name="propietarioId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Seleccionar propietario…</option>
             {propietarios.map((p) => (
               <option key={p.id} value={p.id}>
@@ -48,7 +48,7 @@ export default async function ReportesPage() {
         </label>
         <label className="text-sm">
           Huésped reportado
-          <select name="huespedId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2">
+          <select name="huespedId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Seleccionar huésped…</option>
             {huespedes.map((h) => (
               <option key={h.id} value={h.id}>
@@ -59,7 +59,7 @@ export default async function ReportesPage() {
         </label>
         <label className="text-sm sm:col-span-2">
           Reserva relacionada (opcional)
-          <select name="reservaId" className="mt-1 w-full rounded border border-neutral-300 px-3 py-2">
+          <select name="reservaId" className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Sin reserva asociada</option>
             {reservas.map((r) => (
               <option key={r.id} value={r.id}>
@@ -70,7 +70,7 @@ export default async function ReportesPage() {
         </label>
         <label className="text-sm">
           Tipo de incidente
-          <select name="tipo" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2">
+          <select name="tipo" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             {TIPOS.map((tipo) => (
               <option key={tipo} value={tipo}>
                 {tipo}

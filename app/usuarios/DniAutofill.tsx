@@ -47,7 +47,7 @@ export function DniAutofill() {
           required
           value={rol}
           onChange={(e) => setRol(e.target.value)}
-          className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
+          className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400"
         >
           {ROLES.map((r) => (
             <option key={r.value} value={r.value}>
@@ -98,7 +98,7 @@ export function DniAutofill() {
           <select
             name="nivel"
             defaultValue="2"
-            className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
+            className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400"
           >
             <option value="2">Nivel 2 — puede modificar tarifas</option>
             <option value="3">Nivel 3 — políticas del sistema (a futuro)</option>

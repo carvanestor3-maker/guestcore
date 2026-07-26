@@ -12,7 +12,7 @@ export default async function UsuariosPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Usuarios</h1>
+        <h1 className="text-2xl font-bold text-teal-900">Usuarios</h1>
         <p className="mt-1 text-neutral-600">
           Propietarios, huéspedes, inmobiliarias y aseguradoras comparten el mismo
           registro; el rol define qué puede hacer cada uno.
@@ -23,7 +23,7 @@ export default async function UsuariosPage() {
         action={crearUsuario}
         className="grid grid-cols-1 gap-4 rounded-lg border border-neutral-200 bg-white p-6 sm:grid-cols-2"
       >
-        <h2 className="col-span-full font-semibold">Nuevo usuario</h2>
+        <h2 className="col-span-full font-semibold text-teal-700">Nuevo usuario</h2>
         <p className="col-span-full text-xs text-neutral-500">
           El DNI se valida contra un padrón (simulado en este entorno de prueba)
           y el nombre completo se autocompleta solo. Es obligatorio para

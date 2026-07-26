@@ -29,7 +29,7 @@ export default async function AdministracionPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Administración</h1>
+        <h1 className="text-2xl font-bold text-teal-900">Administración</h1>
         <p className="mt-1 text-neutral-600">
           Generación de claves de acceso. Sólo una cuenta de nivel 3 puede
           generar una clave para una cuenta de nivel 2; las claves de nivel 4
@@ -39,7 +39,7 @@ export default async function AdministracionPage({
 
       <form method="get" className="flex flex-wrap items-center gap-2 rounded-lg border border-neutral-200 bg-white p-4 text-sm">
         <span className="text-neutral-500">Actuar como:</span>
-        <select name="actorId" defaultValue={actorId ?? ""} className="rounded border border-neutral-300 px-2 py-1">
+        <select name="actorId" defaultValue={actorId ?? ""} className="rounded border border-neutral-300 px-2 py-1 text-teal-400">
           <option value="">Sin identificar</option>
           {usuarios.map((u) => (
             <option key={u.id} value={u.id}>
@@ -67,7 +67,7 @@ export default async function AdministracionPage({
           />
 
           <div className="rounded-lg border border-neutral-200 bg-white p-6">
-            <h2 className="font-semibold text-neutral-900">Claves maestras de nivel 4</h2>
+            <h2 className="font-semibold text-teal-700">Claves maestras de nivel 4</h2>
             <p className="mt-1 text-sm text-neutral-600">
               Fijas en el código (<code className="text-neutral-800">lib/claves-maestras.ts</code>), para
               tener acceso desde el arranque de las pruebas. Sólo cambian si

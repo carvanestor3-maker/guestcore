@@ -58,12 +58,12 @@ export default function RootLayout({
             <Link href="/" className="text-lg font-bold tracking-tight">
               guestcore
             </Link>
-            <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-neutral-600">
+            <nav className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-teal-600">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="hover:text-neutral-900 hover:underline"
+                  className="hover:text-teal-900 hover:underline"
                 >
                   {link.label}
                 </Link>

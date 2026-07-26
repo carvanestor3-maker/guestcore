@@ -37,7 +37,7 @@ export default async function TarifasPage({
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Tarifas de consulta</h1>
+        <h1 className="text-2xl font-bold text-teal-900">Tarifas de consulta</h1>
         <p className="mt-1 text-neutral-600">
           Las primeras 3 consultas por mes de cada cuenta son gratis. De 4 a 10
           se cobran por consulta; a partir de la 11 pasa a un abono mensual
@@ -49,7 +49,7 @@ export default async function TarifasPage({
 
       <form method="get" className="flex flex-wrap items-center gap-2 rounded-lg border border-neutral-200 bg-white p-4 text-sm">
         <span className="text-neutral-500">Actuar como:</span>
-        <select name="actorId" defaultValue={actorId ?? ""} className="rounded border border-neutral-300 px-2 py-1">
+        <select name="actorId" defaultValue={actorId ?? ""} className="rounded border border-neutral-300 px-2 py-1 text-teal-400">
           <option value="">Sin identificar</option>
           {usuarios.map((u) => (
             <option key={u.id} value={u.id}>
@@ -103,7 +103,7 @@ export default async function TarifasPage({
           className="grid grid-cols-1 gap-4 rounded-lg border border-neutral-200 bg-white p-6 sm:grid-cols-2"
         >
           <input type="hidden" name="actorId" value={actorId} />
-          <h2 className="col-span-full font-semibold">Modificar precios</h2>
+          <h2 className="col-span-full font-semibold text-teal-700">Modificar precios</h2>
           <label className="text-sm">
             Precio por consulta (tramo básico, ARS)
             <input

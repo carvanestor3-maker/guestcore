@@ -21,7 +21,7 @@ export default async function Home() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">guestcore</h1>
+        <h1 className="text-2xl font-bold text-teal-900">guestcore</h1>
         <p className="mt-1 max-w-2xl text-neutral-600">
           Un &quot;Veraz inmobiliario&quot; para alquiler temporario: los propietarios
           reportan daños o robos de huéspedes, y cualquiera puede consultar el
@@ -36,29 +36,29 @@ export default async function Home() {
             href={stat.href}
             className="rounded-lg border border-neutral-200 bg-white p-4 transition hover:border-neutral-400"
           >
-            <div className="text-2xl font-bold">{stat.value}</div>
+            <div className="text-2xl font-bold text-red-300">{stat.value}</div>
             <div className="text-sm text-neutral-500">{stat.label}</div>
           </Link>
         ))}
       </div>
 
       <div className="rounded-lg border border-neutral-200 bg-white p-6">
-        <h2 className="font-semibold">Flujo de prueba sugerido</h2>
-        <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-neutral-600">
+        <h2 className="font-semibold text-teal-700">Flujo de prueba sugerido</h2>
+        <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-neutral-600 marker:text-red-300">
           <li>
-            Creá un <Link className="underline" href="/usuarios">propietario y un huésped</Link>.
+            Creá un <Link className="text-teal-400 underline hover:text-teal-600" href="/usuarios">propietario y un huésped</Link>.
           </li>
           <li>
-            Cargá una <Link className="underline" href="/propiedades">propiedad</Link> para el propietario.
+            Cargá una <Link className="text-teal-400 underline hover:text-teal-600" href="/propiedades">propiedad</Link> para el propietario.
           </li>
           <li>
-            Registrá una <Link className="underline" href="/reservas">reserva</Link> del huésped en esa propiedad.
+            Registrá una <Link className="text-teal-400 underline hover:text-teal-600" href="/reservas">reserva</Link> del huésped en esa propiedad.
           </li>
           <li>
-            Si hubo un daño o robo, cargá un <Link className="underline" href="/reportes">reporte</Link>.
+            Si hubo un daño o robo, cargá un <Link className="text-teal-400 underline hover:text-teal-600" href="/reportes">reporte</Link>.
           </li>
           <li>
-            Antes de aceptar a un huésped, <Link className="underline" href="/buscar">consultá su score</Link> por email.
+            Antes de aceptar a un huésped, <Link className="text-teal-400 underline hover:text-teal-600" href="/buscar">consultá su score</Link> por email.
           </li>
         </ol>
       </div>

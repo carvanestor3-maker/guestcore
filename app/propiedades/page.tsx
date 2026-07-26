@@ -13,7 +13,7 @@ export default async function PropiedadesPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Propiedades</h1>
+        <h1 className="text-2xl font-bold text-teal-900">Propiedades</h1>
         <p className="mt-1 text-neutral-600">Propiedades de alquiler temporario cargadas por sus propietarios.</p>
       </div>
 
@@ -21,10 +21,10 @@ export default async function PropiedadesPage() {
         action={crearPropiedad}
         className="grid grid-cols-1 gap-4 rounded-lg border border-neutral-200 bg-white p-6 sm:grid-cols-2"
       >
-        <h2 className="col-span-full font-semibold">Nueva propiedad</h2>
+        <h2 className="col-span-full font-semibold text-teal-700">Nueva propiedad</h2>
         <label className="text-sm sm:col-span-2">
           Propietario
-          <select name="propietarioId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2">
+          <select name="propietarioId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Seleccionar propietario…</option>
             {propietarios.map((p) => (
               <option key={p.id} value={p.id}>

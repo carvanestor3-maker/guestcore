@@ -19,7 +19,7 @@ export default async function ReservasPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold">Reservas</h1>
+        <h1 className="text-2xl font-bold text-teal-900">Reservas</h1>
         <p className="mt-1 text-neutral-600">Estadías de huéspedes en propiedades. Un reporte se puede asociar a una reserva.</p>
       </div>
 
@@ -27,10 +27,10 @@ export default async function ReservasPage() {
         action={crearReserva}
         className="grid grid-cols-1 gap-4 rounded-lg border border-neutral-200 bg-white p-6 sm:grid-cols-2"
       >
-        <h2 className="col-span-full font-semibold">Nueva reserva</h2>
+        <h2 className="col-span-full font-semibold text-teal-700">Nueva reserva</h2>
         <label className="text-sm">
           Propiedad
-          <select name="propiedadId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2">
+          <select name="propiedadId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Seleccionar propiedad…</option>
             {propiedades.map((p) => (
               <option key={p.id} value={p.id}>
@@ -41,7 +41,7 @@ export default async function ReservasPage() {
         </label>
         <label className="text-sm">
           Huésped
-          <select name="huespedId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2">
+          <select name="huespedId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Seleccionar huésped…</option>
             {huespedes.map((h) => (
               <option key={h.id} value={h.id}>
