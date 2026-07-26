@@ -1,7 +1,8 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import "./globals.css";
+import { ServiceWorkerRegistration } from "@/app/ServiceWorkerRegistration";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,6 +17,18 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "guestcore — scoring de huéspedes",
   description: "Veraz inmobiliario para alquiler temporario",
+  icons: {
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "guestcore",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#171717",
 };
 
 const NAV_LINKS = [
@@ -64,6 +77,7 @@ export default function RootLayout({
         <footer className="border-t border-neutral-200 py-4 text-center text-xs text-neutral-400">
           guestcore — interfaz de prueba
         </footer>
+        <ServiceWorkerRegistration />
       </body>
     </html>
   );
