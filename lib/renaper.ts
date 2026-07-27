@@ -1,4 +1,5 @@
 import { normalizarDni } from "@/lib/identity";
+import { prisma } from "@/lib/prisma";
 
 export type PersonaPadron = { dni: string; nombreCompleto: string };
 
@@ -22,6 +23,12 @@ const PADRON_SIMULADO: PersonaPadron[] = [
 export async function consultarPersonaPorDni(dniCrudo: string): Promise<PersonaPadron | null> {
   const dni = normalizarDni(dniCrudo);
   if (!dni) return null;
+
+  // El padrón manual (cargado por nivel 3 desde /administracion) tiene
+  // prioridad sobre el fixture fijo, ya que representa altas reales hechas
+  // a mano durante las pruebas.
+  const manual = await prisma.padronManual.findUnique({ where: { dni } });
+  if (manual) return { dni: manual.dni, nombreCompleto: manual.nombreCompleto };
 
   // Simula la latencia de red de un proveedor externo real.
   await new Promise((resolve) => setTimeout(resolve, 250));

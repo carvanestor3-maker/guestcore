@@ -40,7 +40,7 @@ export function DniAutofill() {
 
   return (
     <>
-      <label className="text-sm">
+      <label className="text-sm text-neutral-700">
         Rol
         <select
           name="rol"
@@ -56,7 +56,7 @@ export function DniAutofill() {
           ))}
         </select>
       </label>
-      <label className="text-sm">
+      <label className="text-sm text-neutral-700">
         DNI <span className="text-red-500">*</span>
         <input
           name="dni"
@@ -66,7 +66,7 @@ export function DniAutofill() {
           value={dni}
           onChange={(e) => setDni(e.target.value)}
           onBlur={(e) => buscar(e.target.value)}
-          className="mt-1 w-full rounded border border-neutral-300 px-3 py-2"
+          className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900"
         />
         {estado === "buscando" && (
           <span className="mt-1 block text-xs text-neutral-400">Consultando padrón…</span>
@@ -80,7 +80,7 @@ export function DniAutofill() {
           </span>
         )}
       </label>
-      <label className="text-sm">
+      <label className="text-sm text-neutral-700">
         Nombre completo
         <input
           name="nombre"
@@ -89,11 +89,11 @@ export function DniAutofill() {
           value={nombre}
           onChange={(e) => setNombre(e.target.value)}
           placeholder="Se completa solo al validar el DNI"
-          className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 read-only:bg-neutral-100"
+          className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900 read-only:bg-neutral-100"
         />
       </label>
       {rol === "ADMIN" && (
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Nivel de permisos
           <select
             name="nivel"

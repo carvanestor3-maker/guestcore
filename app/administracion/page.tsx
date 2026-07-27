@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/app/components/Badge";
 import { GenerarClaveForm } from "@/app/administracion/GenerarClaveForm";
+import { GenerarClaveNivel3Form } from "@/app/administracion/GenerarClaveNivel3Form";
+import { CrearUsuarioSinValidacionForm } from "@/app/administracion/CrearUsuarioSinValidacionForm";
+import { ImportarPadronForm } from "@/app/administracion/ImportarPadronForm";
 import { CLAVES_MAESTRAS_NIVEL_4 } from "@/lib/claves-maestras";
 
 function formatearFecha(fecha: Date) {
@@ -14,13 +17,18 @@ export default async function AdministracionPage({
 }) {
   const { actorId } = await searchParams;
 
-  const [usuarios, actor, usuariosNivel2, claves] = await Promise.all([
+  const [usuarios, actor, usuariosNivel2, usuariosNivel3, claves, padronManual] = await Promise.all([
     prisma.usuario.findMany({ orderBy: { nombre: "asc" } }),
     actorId ? prisma.usuario.findUnique({ where: { id: actorId } }) : Promise.resolve(null),
     prisma.usuario.findMany({ where: { nivel: 2 }, orderBy: { nombre: "asc" } }),
+    prisma.usuario.findMany({ where: { nivel: 3 }, orderBy: { nombre: "asc" } }),
     prisma.claveAcceso.findMany({
       orderBy: { createdAt: "desc" },
       include: { usuario: true, generadaPor: true },
+    }),
+    prisma.padronManual.findMany({
+      orderBy: { createdAt: "desc" },
+      include: { cargadoPor: true },
     }),
   ]);
 
@@ -31,9 +39,9 @@ export default async function AdministracionPage({
       <div>
         <h1 className="text-2xl font-bold text-teal-900">Administración</h1>
         <p className="mt-1 text-neutral-600">
-          Generación de claves de acceso. Sólo una cuenta de nivel 3 puede
-          generar una clave para una cuenta de nivel 2; las claves de nivel 4
-          son fijas en el código, para arrancar las pruebas del sistema.
+          Generación de claves de acceso, altas sin padrón e importación
+          manual del padrón. Todo esto requiere actuar como una cuenta de
+          nivel 3.
         </p>
       </div>
 
@@ -53,8 +61,8 @@ export default async function AdministracionPage({
         {actor && (
           <span className={esNivel3 ? "text-green-700" : "text-red-600"}>
             {esNivel3
-              ? `${actor.nombre} puede generar claves de nivel 2 (nivel 3).`
-              : `${actor.nombre} no puede generar claves (nivel ${actor.nivel}; se requiere nivel 3).`}
+              ? `${actor.nombre} tiene permisos de nivel 3.`
+              : `${actor.nombre} no tiene permisos de administración (nivel ${actor.nivel}; se requiere nivel 3).`}
           </span>
         )}
       </form>
@@ -66,12 +74,21 @@ export default async function AdministracionPage({
             usuariosNivel2={usuariosNivel2.map((u) => ({ id: u.id, nombre: u.nombre }))}
           />
 
+          <GenerarClaveNivel3Form
+            usuariosNivel3={usuariosNivel3.map((u) => ({ id: u.id, nombre: u.nombre }))}
+          />
+
+          <CrearUsuarioSinValidacionForm actorId={actor.id} />
+
+          <ImportarPadronForm actorId={actor.id} />
+
           <div className="rounded-lg border border-neutral-200 bg-white p-6">
             <h2 className="font-semibold text-teal-700">Claves maestras de nivel 4</h2>
             <p className="mt-1 text-sm text-neutral-600">
               Fijas en el código (<code className="text-neutral-800">lib/claves-maestras.ts</code>), para
               tener acceso desde el arranque de las pruebas. Sólo cambian si
-              se edita el archivo y se recompila/despliega el software.
+              se edita el archivo y se recompila/despliega el software. Se
+              usan para autorizar la generación de claves de nivel 3.
             </p>
             <ul className="mt-3 space-y-1 text-sm">
               {CLAVES_MAESTRAS_NIVEL_4.map((clave, i) => (
@@ -90,7 +107,7 @@ export default async function AdministracionPage({
         <table className="w-full text-left text-sm">
           <thead className="border-b border-neutral-200 bg-neutral-50 text-neutral-500">
             <tr>
-              <th className="px-4 py-3">Cuenta (nivel 2)</th>
+              <th className="px-4 py-3">Cuenta</th>
               <th className="px-4 py-3">Generada por</th>
               <th className="px-4 py-3">Estado</th>
               <th className="px-4 py-3">Fecha</th>
@@ -100,7 +117,9 @@ export default async function AdministracionPage({
             {claves.map((c) => (
               <tr key={c.id} className="border-b border-neutral-100 last:border-0">
                 <td className="px-4 py-3 font-medium">{c.usuario.nombre}</td>
-                <td className="px-4 py-3 text-neutral-600">{c.generadaPor.nombre}</td>
+                <td className="px-4 py-3 text-neutral-600">
+                  {c.generadaConClaveMaestra ? "Clave maestra nivel 4" : (c.generadaPor?.nombre ?? "—")}
+                </td>
                 <td className="px-4 py-3">
                   <Badge tone={c.activa ? "VERIFICADO" : "RECHAZADO"}>{c.activa ? "ACTIVA" : "INACTIVA"}</Badge>
                 </td>
@@ -110,7 +129,37 @@ export default async function AdministracionPage({
             {claves.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-4 py-6 text-center text-neutral-400">
-                  Todavía no se generó ninguna clave de nivel 2.
+                  Todavía no se generó ninguna clave de nivel 2 o 3.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="overflow-x-auto rounded-lg border border-neutral-200 bg-white">
+        <table className="w-full text-left text-sm">
+          <thead className="border-b border-neutral-200 bg-neutral-50 text-neutral-500">
+            <tr>
+              <th className="px-4 py-3">DNI</th>
+              <th className="px-4 py-3">Nombre completo</th>
+              <th className="px-4 py-3">Cargado por</th>
+              <th className="px-4 py-3">Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+            {padronManual.map((p) => (
+              <tr key={p.id} className="border-b border-neutral-100 last:border-0">
+                <td className="px-4 py-3 font-medium">{p.dni}</td>
+                <td className="px-4 py-3 text-neutral-600">{p.nombreCompleto}</td>
+                <td className="px-4 py-3 text-neutral-600">{p.cargadoPor.nombre}</td>
+                <td className="px-4 py-3 text-neutral-600">{formatearFecha(p.createdAt)}</td>
+              </tr>
+            ))}
+            {padronManual.length === 0 && (
+              <tr>
+                <td colSpan={4} className="px-4 py-6 text-center text-neutral-400">
+                  Todavía no se importó ningún DNI al padrón manual.
                 </td>
               </tr>
             )}

@@ -28,7 +28,7 @@ export default async function ReservasPage() {
         className="grid grid-cols-1 gap-4 rounded-lg border border-neutral-200 bg-white p-6 sm:grid-cols-2"
       >
         <h2 className="col-span-full font-semibold text-teal-700">Nueva reserva</h2>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Propiedad
           <select name="propiedadId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Seleccionar propiedad…</option>
@@ -39,7 +39,7 @@ export default async function ReservasPage() {
             ))}
           </select>
         </label>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Huésped
           <select name="huespedId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Seleccionar huésped…</option>
@@ -50,13 +50,13 @@ export default async function ReservasPage() {
             ))}
           </select>
         </label>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Check-in
-          <input name="checkIn" type="date" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2" />
+          <input name="checkIn" type="date" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900" />
         </label>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Check-out
-          <input name="checkOut" type="date" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2" />
+          <input name="checkOut" type="date" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900" />
         </label>
         <button
           type="submit"

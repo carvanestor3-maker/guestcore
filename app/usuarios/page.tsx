@@ -32,13 +32,13 @@ export default async function UsuariosPage() {
           consultar o cargar reportes.
         </p>
         <DniAutofill />
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Email
-          <input name="email" type="email" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2" />
+          <input name="email" type="email" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900" />
         </label>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Teléfono
-          <input name="telefono" className="mt-1 w-full rounded border border-neutral-300 px-3 py-2" />
+          <input name="telefono" className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900" />
         </label>
         <button
           type="submit"

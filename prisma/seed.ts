@@ -13,6 +13,8 @@ async function main() {
   await prisma.propiedad.deleteMany();
   await prisma.suscripcion.deleteMany();
   await prisma.kycVerificacion.deleteMany();
+  await prisma.claveAcceso.deleteMany();
+  await prisma.padronManual.deleteMany();
   await prisma.usuario.deleteMany();
   await prisma.tarifaConsulta.deleteMany();
 
@@ -141,7 +143,38 @@ async function main() {
       tipo: "ROBO",
       descripcion: "Faltante de utensilios de cocina y ropa de blanco al finalizar la estadía.",
       monto: 45000,
-      estado: "PENDIENTE",
+      estado: "VERIFICADO",
+    },
+  });
+
+  await prisma.reporte.create({
+    data: {
+      huespedId: huespedProblema.id,
+      propietarioId: propietario1.id,
+      tipo: "COMPORTAMIENTO",
+      descripcion: "Fiesta no autorizada con ruidos molestos hasta la madrugada.",
+      estado: "VERIFICADO",
+    },
+  });
+
+  await prisma.reporte.create({
+    data: {
+      huespedId: huespedProblema.id,
+      propietarioId: propietario2.id,
+      tipo: "OTRO",
+      descripcion: "Ingreso de mascotas no declaradas, contra lo acordado en la reserva.",
+      estado: "VERIFICADO",
+    },
+  });
+
+  await prisma.reporte.create({
+    data: {
+      huespedId: huespedProblema.id,
+      propietarioId: propietario1.id,
+      tipo: "DAÑO",
+      descripcion: "Manchas de humedad por dejar una ventana abierta durante una tormenta.",
+      monto: 30000,
+      estado: "VERIFICADO",
     },
   });
 

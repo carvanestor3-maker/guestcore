@@ -60,7 +60,11 @@ model Usuario {
   // Nivel de permisos, independiente del rol de negocio:
   // 1 = propietario/inmobiliaria/aseguradora/huésped (piden o reciben reportes)
   // 2 = puede modificar el precio de la tabla de tarifas de consulta
-  // 3 = administrador con acceso a políticas del sistema (login reforzado, a futuro)
+  // 3 = administrador: genera claves nivel 2, da de alta cuentas sin
+  //     padrón, e importa el padrón manual. También genera claves nivel 3
+  //     si presenta una de las 3 claves maestras fijas de nivel 4.
+  // 4 = cuentas de máxima jerarquía; conviven con las 3 claves maestras
+  //     fijas en el código (no hace falta un Usuario nivel 4 para usarlas).
   nivel         Int      @default(1)
   createdAt     DateTime @default(now())
 
@@ -73,6 +77,7 @@ model Usuario {
   suscripcion         Suscripcion?
   claveAcceso         ClaveAcceso?      @relation("ClaveDelUsuario")
   clavesGeneradas     ClaveAcceso[]     @relation("ClavesGeneradasPor")
+  padronManualCargado PadronManual[]
 }
 
 model Propiedad {
@@ -161,10 +166,22 @@ model ClaveAcceso {
   // Sólo se guarda el hash; la clave en texto plano se muestra una única vez
   // al generarla y no queda persistida en ningún lado.
   claveHash     String
-  generadaPor   Usuario  @relation("ClavesGeneradasPor", fields: [generadaPorId], references: [id])
-  generadaPorId String
+  // Null cuando la autorización vino de una clave maestra de nivel 4 (no
+  // hay un Usuario nivel 4 puntual detrás de esas 3 claves fijas).
+  generadaPor       Usuario? @relation("ClavesGeneradasPor", fields: [generadaPorId], references: [id])
+  generadaPorId     String?
+  generadaConClaveMaestra Boolean @default(false)
   activa        Boolean  @default(true)
   createdAt     DateTime @default(now())
+}
+
+model PadronManual {
+  id             String   @id @default(cuid())
+  dni            String   @unique
+  nombreCompleto String
+  cargadoPor     Usuario  @relation(fields: [cargadoPorId], references: [id])
+  cargadoPorId   String
+  createdAt      DateTime @default(now())
 }
 
 model Suscripcion {

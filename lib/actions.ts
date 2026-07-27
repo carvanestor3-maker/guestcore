@@ -5,6 +5,8 @@ import { revalidatePath } from "next/cache";
 import { consultarPersonaPorDni } from "@/lib/renaper";
 import { calcularTramo } from "@/lib/tarifas";
 import { generarClaveSegura, hashClave } from "@/lib/claves";
+import { CLAVES_MAESTRAS_NIVEL_4 } from "@/lib/claves-maestras";
+import { normalizarDni } from "@/lib/identity";
 
 function str(formData: FormData, key: string): string {
   return String(formData.get(key) ?? "").trim();
@@ -245,10 +247,131 @@ export async function generarClaveNivel2(
   const clave = generarClaveSegura();
   await prisma.claveAcceso.upsert({
     where: { usuarioId },
-    update: { claveHash: hashClave(clave), generadaPorId: actorId, activa: true },
+    update: { claveHash: hashClave(clave), generadaPorId: actorId, generadaConClaveMaestra: false, activa: true },
     create: { usuarioId, claveHash: hashClave(clave), generadaPorId: actorId },
   });
 
   revalidatePath("/administracion");
   return { clave, error: null };
+}
+
+export type EstadoCrearUsuarioSinValidacion = { ok: boolean; error: string | null };
+
+export async function crearUsuarioSinValidacion(
+  _prevState: EstadoCrearUsuarioSinValidacion,
+  formData: FormData,
+): Promise<EstadoCrearUsuarioSinValidacion> {
+  const actorId = str(formData, "actorId");
+  const actor = actorId ? await prisma.usuario.findUnique({ where: { id: actorId } }) : null;
+  // Esta alta se salta a propósito la validación contra el padrón, así que
+  // queda reservada a nivel 3 (mismo nivel que puede importar el padrón
+  // manual y generar claves).
+  if (!actor || actor.nivel !== 3) {
+    return { ok: false, error: "Sólo un usuario de nivel 3 puede dar de alta cuentas sin validar el DNI." };
+  }
+
+  const nombre = str(formData, "nombre");
+  const email = str(formData, "email").toLowerCase();
+  const dniRaw = str(formData, "dni");
+  const telefono = str(formData, "telefono");
+  const rol = str(formData, "rol") as "PROPIETARIO" | "HUESPED" | "INMOBILIARIA" | "ASEGURADORA" | "ADMIN";
+  const nivel = Number(str(formData, "nivel"));
+
+  if (!nombre || !email || !rol || ![1, 2, 3, 4].includes(nivel)) {
+    return { ok: false, error: "Faltan datos obligatorios." };
+  }
+
+  await prisma.usuario.create({
+    data: {
+      nombre,
+      email,
+      dni: dniRaw ? normalizarDni(dniRaw) : null,
+      telefono: telefono || null,
+      rol,
+      nivel,
+    },
+  });
+
+  revalidatePath("/administracion");
+  revalidatePath("/usuarios");
+  revalidatePath("/");
+  return { ok: true, error: null };
+}
+
+export async function generarClaveNivel3(
+  _prevState: EstadoGenerarClave,
+  formData: FormData,
+): Promise<EstadoGenerarClave> {
+  const claveMaestra = str(formData, "claveMaestra");
+  const usuarioId = str(formData, "usuarioId");
+  if (!claveMaestra || !usuarioId) {
+    return { clave: null, error: "Faltan datos para generar la clave." };
+  }
+
+  if (!CLAVES_MAESTRAS_NIVEL_4.includes(claveMaestra)) {
+    return { clave: null, error: "La clave maestra ingresada no es válida." };
+  }
+
+  const objetivo = await prisma.usuario.findUnique({ where: { id: usuarioId } });
+  if (!objetivo || objetivo.nivel !== 3) {
+    return { clave: null, error: "La cuenta elegida no es de nivel 3." };
+  }
+
+  const clave = generarClaveSegura();
+  await prisma.claveAcceso.upsert({
+    where: { usuarioId },
+    update: {
+      claveHash: hashClave(clave),
+      generadaPorId: null,
+      generadaConClaveMaestra: true,
+      activa: true,
+    },
+    create: { usuarioId, claveHash: hashClave(clave), generadaConClaveMaestra: true },
+  });
+
+  revalidatePath("/administracion");
+  return { clave, error: null };
+}
+
+export type EstadoImportarPadron = { importados: number; error: string | null };
+
+export async function importarPadronManual(
+  _prevState: EstadoImportarPadron,
+  formData: FormData,
+): Promise<EstadoImportarPadron> {
+  const actorId = str(formData, "actorId");
+  const actor = actorId ? await prisma.usuario.findUnique({ where: { id: actorId } }) : null;
+  if (!actor || actor.nivel !== 3) {
+    return { importados: 0, error: "Sólo un usuario de nivel 3 puede importar el padrón manual." };
+  }
+
+  const lista = str(formData, "lista");
+  if (!lista) {
+    return { importados: 0, error: "Pegá al menos una línea con DNI y nombre." };
+  }
+
+  const filas = lista
+    .split("\n")
+    .map((linea) => linea.trim())
+    .filter(Boolean)
+    .map((linea) => {
+      const [dniRaw, ...resto] = linea.split(",");
+      return { dni: normalizarDni(dniRaw ?? ""), nombreCompleto: resto.join(",").trim() };
+    })
+    .filter((fila) => fila.dni && fila.nombreCompleto);
+
+  if (filas.length === 0) {
+    return { importados: 0, error: "Ninguna línea tiene el formato 'DNI, Nombre completo'." };
+  }
+
+  for (const fila of filas) {
+    await prisma.padronManual.upsert({
+      where: { dni: fila.dni },
+      update: { nombreCompleto: fila.nombreCompleto, cargadoPorId: actor.id },
+      create: { dni: fila.dni, nombreCompleto: fila.nombreCompleto, cargadoPorId: actor.id },
+    });
+  }
+
+  revalidatePath("/administracion");
+  return { importados: filas.length, error: null };
 }

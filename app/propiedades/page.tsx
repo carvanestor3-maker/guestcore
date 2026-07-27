@@ -1,6 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { crearPropiedad } from "@/lib/actions";
 
+const TIPOS_PROPIEDAD = [
+  "Departamento",
+  "Casa",
+  "Casa quinta",
+  "Local",
+  "Oficina",
+  "Depósito",
+  "Otro",
+];
+
 export default async function PropiedadesPage() {
   const [propiedades, propietarios] = await Promise.all([
     prisma.propiedad.findMany({
@@ -22,7 +32,7 @@ export default async function PropiedadesPage() {
         className="grid grid-cols-1 gap-4 rounded-lg border border-neutral-200 bg-white p-6 sm:grid-cols-2"
       >
         <h2 className="col-span-full font-semibold text-teal-700">Nueva propiedad</h2>
-        <label className="text-sm sm:col-span-2">
+        <label className="text-sm text-neutral-700 sm:col-span-2">
           Propietario
           <select name="propietarioId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Seleccionar propietario…</option>
@@ -33,23 +43,30 @@ export default async function PropiedadesPage() {
             ))}
           </select>
         </label>
-        <label className="text-sm sm:col-span-2">
+        <label className="text-sm text-neutral-700 sm:col-span-2">
           Título
-          <input name="titulo" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2" />
+          <input name="titulo" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900" />
         </label>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Dirección
-          <input name="direccion" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2" />
+          <input name="direccion" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900" />
         </label>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Ciudad
-          <input name="ciudad" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2" />
+          <input name="ciudad" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900" />
         </label>
-        <label className="text-sm">
-          Tipo
-          <input name="tipo" placeholder="Departamento, casa…" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2" />
+        <label className="text-sm text-neutral-700">
+          Tipo de propiedad
+          <select name="tipo" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
+            <option value="">Seleccionar tipo…</option>
+            {TIPOS_PROPIEDAD.map((tipo) => (
+              <option key={tipo} value={tipo}>
+                {tipo}
+              </option>
+            ))}
+          </select>
         </label>
-        <label className="flex items-center gap-2 self-end text-sm">
+        <label className="flex items-center gap-2 self-end text-sm text-neutral-700">
           <input name="amueblado" type="checkbox" defaultChecked className="h-4 w-4" />
           Amueblado
         </label>

@@ -35,7 +35,7 @@ export default async function ReportesPage() {
         className="grid grid-cols-1 gap-4 rounded-lg border border-neutral-200 bg-white p-6 sm:grid-cols-2"
       >
         <h2 className="col-span-full font-semibold text-teal-700">Nuevo reporte</h2>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Propietario que reporta
           <select name="propietarioId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Seleccionar propietario…</option>
@@ -46,7 +46,7 @@ export default async function ReportesPage() {
             ))}
           </select>
         </label>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Huésped reportado
           <select name="huespedId" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Seleccionar huésped…</option>
@@ -57,7 +57,7 @@ export default async function ReportesPage() {
             ))}
           </select>
         </label>
-        <label className="text-sm sm:col-span-2">
+        <label className="text-sm text-neutral-700 sm:col-span-2">
           Reserva relacionada (opcional)
           <select name="reservaId" className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             <option value="">Sin reserva asociada</option>
@@ -68,7 +68,7 @@ export default async function ReportesPage() {
             ))}
           </select>
         </label>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Tipo de incidente
           <select name="tipo" required className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-teal-400">
             {TIPOS.map((tipo) => (
@@ -78,13 +78,13 @@ export default async function ReportesPage() {
             ))}
           </select>
         </label>
-        <label className="text-sm">
+        <label className="text-sm text-neutral-700">
           Monto estimado del daño (ARS, opcional)
-          <input name="monto" type="number" min="0" step="1" className="mt-1 w-full rounded border border-neutral-300 px-3 py-2" />
+          <input name="monto" type="number" min="0" step="1" className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900" />
         </label>
-        <label className="text-sm sm:col-span-2">
+        <label className="text-sm text-neutral-700 sm:col-span-2">
           Descripción
-          <textarea name="descripcion" required rows={3} className="mt-1 w-full rounded border border-neutral-300 px-3 py-2" />
+          <textarea name="descripcion" required rows={3} className="mt-1 w-full rounded border border-neutral-300 px-3 py-2 text-neutral-900" />
         </label>
         <button
           type="submit"
